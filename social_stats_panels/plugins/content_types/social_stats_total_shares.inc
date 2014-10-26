@@ -21,9 +21,9 @@ $plugin = array(
 /**
  * Function to render the share count.
  */
-function social_stats_total_form_render($subtype, $conf, $args, &$context) {
+function social_stats_total_form_render($subtype, $conf, $args, $context) {
   $block = new stdClass();
-  $query = db_query('SELECT s.total_virality FROM {social_stats_total} s WHERE s.nid = :current_node_id', array(':current_node_id' => $context[0]->data->nid))->fetchAssoc();
+  $query = db_fetch_array(db_query('SELECT s.total_virality FROM {social_stats_total} s WHERE s.nid = ' . $context[0]->data->nid));
   if (isset($query['total_virality'])) {
     $block->content = format_plural($query['total_virality'], $conf['singular'], $conf['plural']);
   }
@@ -36,7 +36,7 @@ function social_stats_total_form_render($subtype, $conf, $args, &$context) {
 /**
  * Function to render the Share text configuration form.
  */
-function social_stats_total_form_edit($form, &$form_state) {
+function social_stats_total_form_edit(&$form, &$form_state) {
   $conf = $form_state['conf'];
   $form['social_stats'] = array(
     '#type' => 'fieldset',
@@ -48,23 +48,22 @@ function social_stats_total_form_edit($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Share Text - Singular'),
     '#description' => t('This text will appear when there the node is shared once'),
-    '#default_value' => '1 Share',
+    '#default_value' => isset($conf['singular']) ? $conf['singular'] : '1 Share',
     '#required' => TRUE,
   );
   $form['social_stats']['total_shares_plural'] = array(
     '#type' => 'textfield',
     '#title' => t('Share Text - Plural'),
     '#description' => t('This text will appear when there the node is shared more than once. @count will be replaced by the actual share numbers'),
-    '#default_value' => '@count Shares',
+    '#default_value' => isset($conf['plural']) ? $conf['plural'] : '@count Shares',
     '#required' => TRUE,
   );
-  return $form;
 }
 
 /**
  * Validate function to the Share text configuration form.
  */
-function social_stats_total_form_edit_validate($form, &$form_state) {
+function social_stats_total_form_edit_validate(&$form, &$form_state) {
   if (!(strstr($form_state['values']['total_shares_plural'] , "@count"))) {
     form_set_error('total_shares_plural', '"Share Text - Plural" must contain the word "@count".');
   }
@@ -73,7 +72,7 @@ function social_stats_total_form_edit_validate($form, &$form_state) {
 /**
  * Submit function to the Share text configuration form.
  */
-function social_stats_total_form_edit_submit($form, &$form_state) {
+function social_stats_total_form_edit_submit(&$form, &$form_state) {
   $form_state['conf']['singular'] = $form_state['values']['total_shares_singular'];
   $form_state['conf']['plural'] = $form_state['values']['total_shares_plural'];
 }

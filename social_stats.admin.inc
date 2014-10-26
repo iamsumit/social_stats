@@ -8,17 +8,10 @@
 /**
  * Configuration form for the general settings for Social Stats module.
  */
-function social_stats_general_settings_form($form, &$form_state) {
-  drupal_add_library('system', 'ui.datepicker');
-  drupal_add_js("jQuery(document).ready(function(){
-      jQuery('.pickadate').datepicker({
-        dateFormat: 'dd/mm/yy',
-        autoSize: true,
-        inline: true,
-      });
-    });",
-  'inline');
-
+function social_stats_general_settings_form() {
+  // Add the javascript.
+  $path = drupal_get_path('module', 'social_stats');
+  drupal_add_js($path .'/js/social_stats.js');
   $form['basic_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Basic Settings'),
@@ -31,22 +24,18 @@ function social_stats_general_settings_form($form, &$form_state) {
   $form['basic_settings']['social_stats_options'] = array(
     '#type' => 'radios',
     '#title' => t('Select options'),
-    '#options' => array('Start Date', 'Offset',),
-    '#default_value' => variable_get('social_stats_options', ''),
+    '#options' => array('Start Date', 'Offset'),
+    '#attributes' => array('class' => 'date-options'),
+    '#default_value' => variable_get('social_stats_options', 0),
   );
 
   $form['basic_settings']['social_stats_start_date'] = array(
-    '#title' => t('Start Date (MM/DD/YYYY)'),
+    '#title' => t('Start Date (DD/MM/YYYY)'),
     '#type' => 'textfield',
     '#maxlength' => 20,
-    '#attributes' => array('class' => array('pickadate')),
+    '#attributes' => array('class' => 'date-start'),
     '#default_value' => variable_get('social_stats_start_date', '01/01/1970'),
     '#description' => t('The oldest date from which the statistics should be retrieved.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="social_stats_options"]' => array('value' => 0),
-      ),
-    ),
   );
 
   $form['basic_settings']['social_stats_date_offset'] = array(
@@ -54,13 +43,9 @@ function social_stats_general_settings_form($form, &$form_state) {
     '#type' => 'textfield',
     '#maxlength' => 20,
     '#size' => 20,
+    '#attributes' => array('class' => 'date-offset'),
     '#default_value' => variable_get('social_stats_date_offset', '-100 days'),
     '#description' => t('The days offset from which the stats should be retrieved.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="social_stats_options"]' => array('value' => 1),
-      ),
-    ),
   );
   $form['configuration'] = array(
     '#type' => 'fieldset',
@@ -96,12 +81,11 @@ function social_stats_general_settings_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
-
 /**
  * Configuration form for listing of the content types against the social media.
  */
 function social_stats_content_types_form() {
-  $node_types = node_type_get_types();
+  $node_types = node_get_types();
   $i = 0;
   foreach ($node_types as $types) {
     $form['social_stats'][$i] = array(

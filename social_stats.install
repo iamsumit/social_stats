@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_schema().
+ * Implementation of hook_schema().
  */
 function social_stats_schema() {
   $schema['social_stats_facebook'] = array(
@@ -122,36 +122,19 @@ function social_stats_schema() {
 }
 
 /**
- * Implements hook_uninstall().
+ * Implementation of hook_install().
  */
-function social_stats_uninstall() {
-  $query = db_select('variable', 'v')
-    ->fields('v', array('name'))
-    ->condition('name', db_like('social_stats') . '%', 'LIKE')
-    ->execute();
-  while ($variable = $query->fetchAssoc()) {
-    variable_del($variable['name']);
-  }
+function social_stats_install() {
+  drupal_install_schema('social_stats');
 }
 
 /**
- * Implements hook_update_N().
+ * Implementation of hook_uninstall().
  */
-function social_stats_update_7001() {
-  $spec = array(
-    'type' => 'int',
-    'description' => "GooglePlus Shares",
-    'not null' => FALSE,
-  );
-  if (!db_field_exists('social_stats_gplus', 'share')) {
-    db_add_field('social_stats_gplus', 'share', $spec);
+function social_stats_uninstall() {
+  $result = db_query("SELECT name FROM {variable} WHERE name like '%social_stats%'");
+  while ($row = db_fetch_array($result)) {
+    dsm($row['name']);
   }
-  $spec = array(
-    'type' => 'int',
-    'description' => "GooglePlus Total",
-    'not null' => FALSE,
-  );
-  if (!db_field_exists('social_stats_gplus', 'total')) {
-    db_add_field('social_stats_gplus', 'total', $spec);
-  }
+  drupal_uninstall_schema('social_stats');
 }

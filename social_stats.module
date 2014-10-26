@@ -5,7 +5,7 @@
  */
 
 /**
- * Implements hook_help().
+ * Implementation of hook_help().
  */
 function social_stats_help($path, $arg) {
   $help_text = '';
@@ -18,10 +18,10 @@ function social_stats_help($path, $arg) {
 }
 
 /**
- * Implements hook_menu().
+ * Implementation of hook_menu().
  */
 function social_stats_menu() {
-  $items['admin/config/services/social-stats'] = array(
+  $items['admin/settings/services/social-stats'] = array(
     'title' => 'Social Stats',
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'drupal_get_form',
@@ -29,12 +29,12 @@ function social_stats_menu() {
     'access arguments' => array('administer social stats content types'),
     'file' => 'social_stats.admin.inc',
   );
-  $items['admin/config/services/social-stats/general'] = array(
+  $items['admin/settings/services/social-stats/general'] = array(
     'title' => 'Social Stats',
     'description' => 'Administrative settings for social stats module',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items['admin/config/services/social-stats/content-types'] = array(
+  $items['admin/settings/services/social-stats/content-types'] = array(
     'title' => 'Cron Settings',
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'drupal_get_form',
@@ -47,19 +47,10 @@ function social_stats_menu() {
 }
 
 /**
- * Implements hook_permission().
+ * Implementation of hook_permission().
  */
-function social_stats_permission() {
-  return array(
-    'administer social stats content types' => array(
-      'title' => t('Administer Social Stats content type settings'),
-      'description' => t('Settings specific to the content type for Social Stats module.'),
-    ),
-    'administer social stats cron' => array(
-      'title' => t('Administer Social Stats cron settings'),
-      'description' => t('Cron settings for Social Stats module.')
-    ),
-  );
+function social_stats_perm() {
+  return array('administer social stats content types', 'administer social stats cron');
 }
 
 /**
@@ -70,6 +61,7 @@ function social_stats_permission() {
  * @param string $node_path
  *   The URL alias.
  */
+
 function _social_stats_facebook($node, $node_path = '') {
   $fql_query  = 'SELECT share_count, like_count, commentsbox_count, total_count ';
   $fql_query .= "FROM link_stat WHERE url='" . $node_path . "'";
@@ -80,7 +72,6 @@ function _social_stats_facebook($node, $node_path = '') {
   $params = array(
     'q' => json_encode($fql_queries),
     'format' => 'json',
-    // 'access_token' => $access_token
   );
 
   $request_url = 'https://graph.facebook.com/fql?' . http_build_query($params);
@@ -99,22 +90,21 @@ function _social_stats_facebook($node, $node_path = '') {
       $facebook_data = $fql_data_row->fql_result_set;
       // Only update table if counter > 0
       if (intval($facebook_data[0]->total_count)) {
-        db_merge('social_stats_facebook')
-        ->key(array('nid' => $node->nid))
-        ->fields(array(
-          'fb_likes' => intval($facebook_data[0]->like_count),
-          'fb_shares' => intval($facebook_data[0]->share_count),
-          'fb_comments' => intval($facebook_data[0]->commentsbox_count),
-          'fb_total' => intval($facebook_data[0]->total_count),
-        ))
-        ->execute();
+        $fb_data = $facebook_data[0];
+        $result = db_query('SELECT * FROM {social_stats_facebook} WHERE nid = ' . $node->nid);
+        if (!db_result($result)) {
+         $sql = 'INSERT INTO {social_stats_facebook} (nid, fb_likes, fb_shares, fb_comments, fb_total) VALUES('. $node->nid .', '. $fb_data->like_count .', '. $fb_data->share_count .', '. $fb_data->commentsbox_count .', '. $fb_data->total_count .')';
+        }
+        else {
+         $sql = 'UPDATE {social_stats_facebook} SET fb_likes = ' . $fb_data->like_count . ', fb_shares = ' . $fb_data->share_count . ', fb_comments = ' . $fb_data->commentsbox_count . ', fb_total = ' . $fb_data->total_count . ' WHERE nid = ' . $node->nid;
+        }
+        db_query($sql);
         return $facebook_data[0]->total_count;
       }
       return 0;
     }
   }
 }
-
 /**
  * Fetch the data from Twitter and save it to local table.
  *
@@ -138,14 +128,17 @@ function _social_stats_twitter($node, $node_path = '') {
   }
   else {
     $tweets_data = json_decode($tweets_response->data);
-
     // Only update table if counter > 0
     $twitter_shares = intval($tweets_data->count);
     if ($twitter_shares) {
-      db_merge('social_stats_twitter')
-      ->key(array('nid' => $node->nid))
-      ->fields(array('tweets' => $twitter_shares))
-      ->execute();
+      $result = db_query('SELECT * FROM {social_stats_twitter} WHERE nid = ' . $node->nid);
+      if (!db_result($result)) {
+       $sql = 'INSERT INTO {social_stats_twitter} (nid, tweets) VALUES(' . $node->nid . ', ' . $twitter_shares . ')';
+      }
+      else {
+       $sql = 'UPDATE {social_stats_twitter} SET tweets = ' . $twitter_shares . ' WHERE nid = ' . $node->nid;
+      }
+      db_query($sql);
     }
   }
   return $twitter_shares;
@@ -179,15 +172,18 @@ function _social_stats_linkedin($node, $node_path = '') {
     // Only update table if counter > 0
     $linkedin_shares = intval($linkedin_data->count);
     if ($linkedin_shares) {
-      db_merge('social_stats_linkedin')
-      ->key(array('nid' => $node->nid))
-      ->fields(array('linkedin_shares' => $linkedin_shares))
-      ->execute();
+      $result = db_query('SELECT * FROM {social_stats_linkedin} WHERE nid = ' . $node->nid);
+      if (!db_result($result)) {
+       $sql = 'INSERT INTO {social_stats_linkedin} (nid, linkedin_shares) VALUES(' . $node->nid . ', ' . $linkedin_shares . ')';
+      }
+      else {
+       $sql = 'UPDATE {social_stats_linkedin} SET linkedin_shares = ' . $linkedin_shares . ' WHERE nid = ' . $node->nid;
+      }
+      db_query($sql);
     }
   }
   return $linkedin_shares;
 }
-
 /**
  * Fetch the data from Google+ and save it to local table.
  *
@@ -203,20 +199,17 @@ function _social_stats_googleplus($node, $node_path = '') {
 
   // Only update table if counter > 0
   if ($gplus_count) {
-    db_merge('social_stats_gplus')
-    ->key(array('nid' => $node->nid))
-    ->fields(
-      array(
-        'plusone' => $gplus_like_count,
-        'share' => $gplus_share_count,
-        'total' => $gplus_count,
-      )
-    )
-    ->execute();
+    $result = db_query('SELECT * FROM {social_stats_gplus} WHERE nid = ' . $node->nid);
+    if (!db_result($result)) {
+     $sql = 'INSERT INTO {social_stats_gplus} (nid, plusone, share, total) VALUES(' . $node->nid .', ' . $gplus_like_count . ', ' . $gplus_share_count . ', ' . $gplus_count . ')';
+    }
+    else {
+     $sql = 'UPDATE {social_stats_gplus} SET plusone = ' . $gplus_like_count . ', share = ' . $gplus_share_count . ', total = ' . $gplus_count . ' WHERE nid = ' . $node->nid;
+    }
+    db_query($sql);
   }
   return $gplus_count;
 }
-
 /**
  * Function returning the number of times the node was +1ed.
  */
@@ -256,7 +249,6 @@ function _social_stats_googleplus_plusone($node_path) {
   }
   return $gplus_like_count;
 }
-
 /**
  * Function returning the number of times the node was shared.
  */
@@ -280,7 +272,6 @@ function _social_stats_googleplus_share($node_path) {
   $gplus_share_count = $result[0][1][4];
   return $gplus_share_count;
 }
-
 /**
  * The queue worker function to update the data.
  */
@@ -289,7 +280,7 @@ function _social_stats_update($result) {
   $twitter_shares = 0;
   $linkedin_shares = 0;
   $google_plusone = 0;
-  $variable = variable_get('social_stats_' . $result->type);
+  $variable = variable_get('social_stats_' . $result->type, array(0));
 
   // Create absolute node path using the node path.
   $node_path = url('node/' . $result->nid, array('absolute' => TRUE));
@@ -320,26 +311,19 @@ function _social_stats_update($result) {
   // Adding the total data from all above to get total virality.
   // Update table only when counter > 0
   if ($count_total) {
-    db_merge('social_stats_total')
-    ->key(array('nid' => $result->nid))
-    ->fields(array('total_virality' => $count_total))
-    ->execute();
+    $query_result = db_query('SELECT * FROM {social_stats_total} WHERE nid = ' . $result->nid);
+    if (!db_result($query_result)) {
+     $sql = 'INSERT INTO {social_stats_total} (nid, total_virality) VALUES(' . $result->nid . ', ' . $count_total . ')';
+    }
+    else {
+     $sql = 'UPDATE {social_stats_total} SET total_virality = ' . $count_total . ' WHERE nid = ' . $result->nid;
+    }
+    db_query($sql);
   }
 }
 
 /**
- * Implements hook_cron_queue_info().
- */
-function social_stats_cron_queue_info() {
-  $queues['social_stats_update_stats'] = array(
-    'worker callback' => '_social_stats_update',
-    'time' => variable_get('social_stats_cron_duration', 300),
-  );
-  return $queues;
-}
-
-/**
- * Implements hook_cron().
+ * Implementation of hook_cron().
  */
 function social_stats_cron() {
   $interval = variable_get('social_stats_cron_interval', 60 * 60 * 24);
@@ -347,16 +331,16 @@ function social_stats_cron() {
     variable_set('social_stats_next_execution', time() + $interval);
 
     // Get list of content types in the site.
-    $node_types = node_type_get_types();
-    $content_types = array();
-    foreach ($node_types as $types) {
-      $variable = variable_get('social_stats_' . $types->type);
-      if ($variable['Facebook']    ||
-          $variable['Twitter']     ||
-          $variable['Google Plus'] ||
-          $variable['LinkedIn']) {
-        $content_types[] = $types->type;
-      }
+    $node_types = node_get_types();
+      $content_types = array();
+      foreach ($node_types as $types) {
+        $variable = variable_get('social_stats_' . $types->type, array(0));
+        if ($variable['Facebook']    ||
+            $variable['Twitter']     ||
+            $variable['Google Plus'] ||
+            $variable['LinkedIn']) {
+          $content_types[] = $types->type;
+        }
     }
 
     $start_date = '';
@@ -372,36 +356,25 @@ function social_stats_cron() {
     // Fetch node id and type for the content types,
     // which has at least one social media selected and
     // which are created after the date mentioned in module's configuration.
-    $query = db_select('node', 'n')
-              ->fields('n', array('nid', 'type'))
-              ->condition('n.type', empty($content_types) ? '0' : $content_types)
-              ->condition('n.created', $start_date, '>=')
-              ->execute();
-    $queue = DrupalQueue::get('social_stats_update_stats');
-    while ($result = $query->fetchObject()) {
-      $queue->createItem($result);
+    if (!empty($content_types)) {
+      $query = db_query(db_rewrite_sql("SELECT n.nid, n.type FROM {node} n WHERE n.type IN (" . db_placeholders($content_types, 'text') . ")"), $content_types);
+      while ($row = db_fetch_array($query)) {
+        _social_stats_update($row);
+      }
     }
   }
 }
 
 /**
- * Implements hook_node_delete().
+ * Implementation of hook_node_delete().
  */
-function social_stats_node_delete($node) {
+function social_stats_nodeapi(&$node, $op) {
   // Delete all the social data on node deletion.
-  db_delete('social_stats_facebook')
-    ->condition('nid', $node->nid)
-    ->execute();
-  db_delete('social_stats_twitter')
-    ->condition('nid', $node->nid)
-    ->execute();
-  db_delete('social_stats_linkedin')
-    ->condition('nid', $node->nid)
-    ->execute();
-  db_delete('social_stats_gplus')
-    ->condition('nid', $node->nid)
-    ->execute();
-  db_delete('social_stats_total')
-    ->condition('nid', $node->nid)
-    ->execute();
+  if ($op == 'delete') {
+    db_query('DELETE FROM {social_stats_facebook} WHERE nid = ' . $node->nid);
+    db_query('DELETE FROM {social_stats_twitter} WHERE nid = ' . $node->nid);
+    db_query('DELETE FROM {social_stats_linkedin} WHERE nid = ' . $node->nid);
+    db_query('DELETE FROM {social_stats_gplus} WHERE nid = ' . $node->nid);
+    db_query('DELETE FROM {social_stats_total} WHERE nid = ' . $node->nid);
+  }
 }
