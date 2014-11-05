@@ -132,9 +132,9 @@ function social_stats_install() {
  * Implementation of hook_uninstall().
  */
 function social_stats_uninstall() {
-  $result = db_query("SELECT name FROM {variable} WHERE name like '%social_stats%'");
-  while ($row = db_fetch_array($result)) {
-    dsm($row['name']);
-  }
   drupal_uninstall_schema('social_stats');
+  $result = db_query("SELECT name FROM {variable} WHERE name like 'social_stats%'");
+  while ($row = db_fetch_array($result)) {
+    variable_del($row['name']);
+  }
 }

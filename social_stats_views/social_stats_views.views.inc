@@ -30,7 +30,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -45,7 +45,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -60,7 +60,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -75,7 +75,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -101,7 +101,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -127,7 +127,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -153,7 +153,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -168,7 +168,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -183,7 +183,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -209,7 +209,7 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
+      'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',

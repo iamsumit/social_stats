@@ -47,7 +47,7 @@ function social_stats_menu() {
 }
 
 /**
- * Implementation of hook_permission().
+ * Implementation of hook_perm().
  */
 function social_stats_perm() {
   return array('administer social stats content types', 'administer social stats cron');
